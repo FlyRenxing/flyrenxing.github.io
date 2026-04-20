@@ -163,26 +163,26 @@ function parseFrontmatter(content) {
 }
 
 /**
- * 调用 DeepSeek API 生成摘要
- * 注意：需要配置 DEEPSEEK_API_KEY 环境变量
+ * 调用智谱 API 生成摘要
+ * 注意：需要配置 ZHIPU_API_KEY 环境变量
  */
 async function generateSummaryWithAI(title, content) {
-  const apiKey = process.env.DEEPSEEK_API_KEY;
+  const apiKey = process.env.ZHIPU_API_KEY;
 
   if (!apiKey) {
-    console.log('⚠️  DEEPSEEK_API_KEY 未配置，跳过 AI 摘要生成');
+    console.log('⚠️  ZHIPU_API_KEY 未配置，跳过 AI 摘要生成');
     return null;
   }
 
   try {
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    const response = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: 'glm-5.1',
         messages: [
           {
             role: 'system',
