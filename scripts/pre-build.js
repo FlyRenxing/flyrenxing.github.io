@@ -210,7 +210,7 @@ async function generateSummaryWithAI(title, content) {
     }
     return data.choices[0].message.content.trim();
   } catch (error) {
-    console.error('❌ AI 摘要生成失败:', error.message);
+    console.log(`❌ AI 摘要生成失败: ${error.message}`);
     return null;
   }
 }
