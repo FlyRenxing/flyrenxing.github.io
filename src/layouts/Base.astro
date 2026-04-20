@@ -1,0 +1,524 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import { SITE_CONFIG } from '../config';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'My AI-Powered Blog' } = Astro.props;
+const { siteName } = SITE_CONFIG;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <ClientRouter />
+  </head>
+  <body class="bg-white dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 min-h-screen font-sans antialiased">
+    <div class="flex flex-col md:flex-row min-h-screen">
+      <!-- Sidebar -->
+      <aside class="sticky top-0 z-50 border-b md:border-b-0 md:border-r border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shrink-0 md:sticky md:top-0 md:h-screen md:w-72 md:p-10 md:flex md:flex-col" transition:persist>
+        <!-- Mobile Nav -->
+        <nav class="flex md:hidden items-center justify-between px-4 py-2.5">
+          <a href="/" class="font-mono text-sm font-bold tracking-widest text-violet-600 dark:text-violet-400">{siteName}</a>
+          <div class="flex items-center gap-4">
+            <a href="/" class="flex items-center gap-1.5 text-sm hover:text-violet-600 transition-colors">
+              <i data-lucide="home" class="w-4 h-4 shrink-0"></i>
+              <span class="font-mono text-[10px]">HOME</span>
+            </a>
+            <a href="/articles" class="flex items-center gap-1.5 text-sm hover:text-violet-600 transition-colors">
+              <i data-lucide="file-text" class="w-4 h-4 shrink-0"></i>
+              <span class="font-mono text-[10px]">ARTICLES</span>
+            </a>
+            <a href="/projects" class="flex items-center gap-1.5 text-sm hover:text-violet-600 transition-colors">
+              <i data-lucide="folder" class="w-4 h-4 shrink-0"></i>
+              <span class="font-mono text-[10px]">PROJECTS</span>
+            </a>
+            <a href="/about" class="flex items-center gap-1.5 text-sm hover:text-violet-600 transition-colors">
+              <i data-lucide="user" class="w-4 h-4 shrink-0"></i>
+              <span class="font-mono text-[10px]">ABOUT</span>
+            </a>
+          </div>
+        </nav>
+
+        <!-- Desktop Brand -->
+        <div class="hidden md:block mb-8 md:mb-12">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-8 h-10 border-2 border-violet-600 flex items-end p-1">
+              <div class="w-full h-1 bg-violet-600"></div>
+            </div>
+          </div>
+          <h1 class="font-mono text-xl font-bold tracking-widest">{siteName}</h1>
+          <p id="typewriter" class="text-xs text-slate-400 dark:text-zinc-500 mt-2 font-mono"></p>
+        </div>
+
+        <!-- Desktop Navigation -->
+        <nav class="hidden md:flex flex-col gap-6">
+          <a href="/" class="flex items-center gap-3 text-sm hover:text-violet-600 transition-colors">
+            <i data-lucide="home" class="w-[18px] h-[18px] shrink-0"></i>
+            <span class="font-mono text-sm">HOME</span>
+          </a>
+          <a href="/articles" class="flex items-center gap-3 text-sm hover:text-violet-600 transition-colors">
+            <i data-lucide="file-text" class="w-[18px] h-[18px] shrink-0"></i>
+            <span class="font-mono text-sm">ARTICLES</span>
+          </a>
+          <a href="/projects" class="flex items-center gap-3 text-sm hover:text-violet-600 transition-colors">
+            <i data-lucide="folder" class="w-[18px] h-[18px] shrink-0"></i>
+            <span class="font-mono text-sm">PROJECTS</span>
+          </a>
+          <a href="/about" class="flex items-center gap-3 text-sm hover:text-violet-600 transition-colors">
+            <i data-lucide="user" class="w-[18px] h-[18px] shrink-0"></i>
+            <span class="font-mono text-sm">ABOUT</span>
+          </a>
+        </nav>
+
+        <!-- Footer -->
+        <div class="hidden md:flex pt-8 border-t border-slate-200 dark:border-zinc-800 flex-col gap-4 mt-auto">
+          <a href={`https://github.com/${SITE_CONFIG.githubUsername}`} target="_blank" rel="noopener" class="flex items-center gap-3 text-sm text-slate-500 dark:text-zinc-400 hover:text-violet-600 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px]"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65S8.93 17.38 9 18v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg>
+            GitHub
+          </a>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 p-4 pt-3 md:p-12 lg:p-16 min-w-0" transition:animate="slide">
+        <slot />
+      </main>
+    </div>
+
+    <!-- Search Modal (at body level to avoid stacking context issues) -->
+    <div id="search-modal" class="fixed inset-0 z-[60] hidden" data-state="closed">
+      <!-- Backdrop -->
+      <div id="search-backdrop" class="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-200"></div>
+
+      <!-- Modal Content -->
+      <div class="relative z-10 max-w-2xl mx-auto px-4 pt-[56px] md:pt-20">
+        <div id="search-panel" class="bg-white dark:bg-zinc-900 rounded-xl md:rounded-2xl shadow-2xl border border-slate-200 dark:border-zinc-700 overflow-hidden opacity-0 scale-95 transition-all duration-200 origin-top">
+          <!-- Search Input -->
+          <div class="relative">
+            <i data-lucide="search" class="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-400 dark:text-zinc-500 pointer-events-none"></i>
+            <input
+              type="search"
+              id="search-input"
+              placeholder="搜索文章..."
+              aria-label="搜索文章"
+              class="w-full py-3 md:py-4 pl-10 md:pl-12 pr-4 text-base md:text-lg bg-transparent border-b border-slate-200 dark:border-zinc-700 focus:outline-none focus:ring-0 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500"
+            />
+            <kbd class="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-1 px-2 py-1 text-xs text-slate-400 dark:text-zinc-500 bg-slate-100 dark:bg-zinc-800 rounded">
+              ESC
+            </kbd>
+          </div>
+
+          <!-- Results -->
+          <div id="search-results"></div>
+        </div>
+
+        <!-- Hint -->
+        <p class="text-center text-xs md:text-sm text-slate-400 dark:text-zinc-500 mt-3 md:mt-4">
+          按 <kbd class="px-1.5 py-0.5 text-xs bg-slate-200 dark:bg-zinc-700 rounded">/</kbd> 快速搜索
+        </p>
+      </div>
+    </div>
+
+    <script>
+      // 初始化 lucide 图标
+      function initLucide() {
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+      }
+
+      // 打字机效果（只在首次加载时执行）
+      function initTypewriter() {
+        const typewriterText = '因为会飞,所以任性';
+        const typewriterEl = document.getElementById('typewriter');
+
+        if (!typewriterEl) return;
+
+        // 如果已经有内容，说明是页面切换，不再执行
+        if (typewriterEl.textContent.length > 0) return;
+
+        let charIndex = 0;
+
+        function typeWriter() {
+          if (charIndex < typewriterText.length) {
+            typewriterEl.textContent = typewriterText.slice(0, charIndex + 1);
+            charIndex++;
+            setTimeout(typeWriter, 200);
+          }
+        }
+
+        setTimeout(typeWriter, 500);
+      }
+
+      // 首次加载
+      initLucide();
+      initTypewriter();
+
+      // View Transitions: 页面切换时重新初始化
+      document.addEventListener('astro:page-load', () => {
+        initLucide();
+        initTypewriter();
+      });
+    </script>
+
+    <script>
+      import { create, insertMultiple, search } from '@orama/orama';
+
+      let db = null;
+      let searchDebounceTimer = null;
+
+      function debounce(fn, delay) {
+        return (...args) => {
+          clearTimeout(searchDebounceTimer);
+          searchDebounceTimer = setTimeout(() => fn(...args), delay);
+        };
+      }
+
+      function tokenize(text) {
+        if (!text) return [];
+        const tokens = new Set();
+        const lowerText = text.toLowerCase();
+        const chineseRegex = /[\u4e00-\u9fff]/;
+        let current = '';
+        let isChinese = false;
+        for (const char of lowerText) {
+          const charIsChinese = chineseRegex.test(char);
+          if (charIsChinese === isChinese && char !== ' ' && char !== '\n' && !/[\p{P}]/u.test(char)) {
+            current += char;
+          } else {
+            if (current) processSegment(current, isChinese, tokens);
+            current = charIsChinese ? char : '';
+            isChinese = charIsChinese;
+          }
+        }
+        if (current) processSegment(current, isChinese, tokens);
+        return Array.from(tokens);
+      }
+
+      function processSegment(segment, isChinese, tokens) {
+        if (isChinese) {
+          const chars = Array.from(segment);
+          for (const char of chars) tokens.add(char);
+          for (let i = 0; i < chars.length - 1; i++) tokens.add(chars[i] + chars[i + 1]);
+          for (let i = 0; i < chars.length - 2; i++) tokens.add(chars[i] + chars[i + 1] + chars[i + 2]);
+          if (segment.length > 1) tokens.add(segment);
+        } else {
+          const word = segment.toLowerCase();
+          tokens.add(word);
+          for (let i = 2; i < word.length; i++) tokens.add(word.slice(0, i));
+        }
+      }
+
+      async function initSearch() {
+        try {
+          const response = await fetch('/search-index.json');
+          if (!response.ok) { console.warn('Search index not found'); return; }
+          const indexData = await response.json();
+          const schema = { id: 'string', title: 'string', description: 'string', tags: 'string[]', slug: 'string', summary: 'string', content: 'string' };
+          db = await create({ schema, components: { tokenizer: { tokenize } } });
+          const docs = Object.values(indexData.docs.docs);
+          await insertMultiple(db, docs);
+        } catch (error) { console.error('Failed to initialize search:', error); }
+      }
+
+      function highlightText(text, query) {
+        if (!text || !query) return text || '';
+        const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        return text.replace(regex, '<mark class="bg-violet-200 dark:bg-violet-800 text-inherit px-0.5 rounded">$1</mark>');
+      }
+
+      function getContext(content, query, maxLength = 100) {
+        if (!content || !query) return '';
+        const lowerContent = content.toLowerCase();
+        const lowerQuery = query.toLowerCase();
+        const index = lowerContent.indexOf(lowerQuery);
+        if (index === -1) return content.slice(0, maxLength) + '...';
+        const start = Math.max(0, index - 30);
+        const end = Math.min(content.length, index + query.length + 50);
+        let context = content.slice(start, end);
+        if (start > 0) context = '...' + context;
+        if (end < content.length) context = context + '...';
+        return context;
+      }
+
+      async function performSearch(query) {
+        if (!db) return [];
+        try {
+          const lowerQuery = query.toLowerCase();
+          const isChineseQuery = /[\u4e00-\u9fff]/.test(query);
+          let hits = [];
+          if (isChineseQuery) {
+            const queryTokens = tokenize(query);
+            const uniqueTokens = [...new Set(queryTokens)].filter(t => t.length >= 1);
+            for (const token of uniqueTokens.slice(0, 5)) {
+              const tokenResults = await search(db, { term: token, properties: ['title', 'description', 'content', 'tags', 'summary'], limit: 20, threshold: 0 });
+              const existingIds = new Set(hits.map(h => h.document.id));
+              for (const hit of (tokenResults.hits || [])) {
+                if (!existingIds.has(hit.document.id)) { hits.push(hit); existingIds.add(hit.document.id); }
+              }
+            }
+          } else {
+            const results = await search(db, { term: lowerQuery, properties: ['title', 'description', 'content', 'tags', 'summary'], limit: 20, threshold: 0, tolerance: 2, exact: false });
+            hits = results.hits || [];
+          }
+          if (hits.length < 5 && !isChineseQuery && lowerQuery.length >= 2) {
+            const queryTokens = tokenize(query);
+            const uniqueTokens = [...new Set(queryTokens)].filter(t => t.length >= 2);
+            for (const token of uniqueTokens.slice(0, 3)) {
+              const tokenResults = await search(db, { term: token, properties: ['title', 'description', 'content', 'tags', 'summary'], limit: 10, threshold: 0 });
+              const existingIds = new Set(hits.map(h => h.document.id));
+              for (const hit of (tokenResults.hits || [])) {
+                if (!existingIds.has(hit.document.id)) { hits.push(hit); existingIds.add(hit.document.id); }
+              }
+            }
+          }
+          hits.sort((a, b) => {
+            const aTitle = (a.document.title || '').toLowerCase();
+            const bTitle = (b.document.title || '').toLowerCase();
+            const aInTitle = aTitle.includes(lowerQuery);
+            const bInTitle = bTitle.includes(lowerQuery);
+            if (aInTitle && !bInTitle) return -1;
+            if (!aInTitle && bInTitle) return 1;
+            return (b.score || 0) - (a.score || 0);
+          });
+          return hits.slice(0, 15);
+        } catch (error) { console.error('Search error:', error); return []; }
+      }
+
+      function renderResults(hits, query) {
+        const searchResults = document.getElementById('search-results');
+        if (!searchResults) return;
+        if (hits.length === 0) {
+          searchResults.innerHTML = `<div class="py-12 text-center text-slate-400 dark:text-zinc-500"><p>没有找到 "${query}" 相关的文章</p><p class="text-sm mt-2">试试其他关键词？</p></div>`;
+          return;
+        }
+        searchResults.innerHTML = hits.map((hit, i) => {
+          const doc = hit.document;
+          const title = highlightText(doc.title, query);
+          const desc = doc.description || doc.summary || '';
+          const context = getContext(doc.content || '', query);
+          const tagsHtml = doc.tags && doc.tags.length > 0
+            ? `<div class="flex gap-1.5 flex-wrap mt-2">${doc.tags.map(t => `<span class="text-xs px-2 py-0.5 bg-violet-50 dark:bg-violet-950 text-violet-600 dark:text-violet-400 rounded">${highlightText(t, query)}</span>`).join('')}</div>`
+            : '';
+          return `
+            <a href="/blog/${doc.slug}" class="block px-4 py-3 border-b border-slate-100 dark:border-zinc-800 last:border-0 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-all duration-200" style="animation: fadeSlideIn 0.25s ease ${i * 40}ms both">
+              <h4 class="font-semibold text-slate-900 dark:text-zinc-100">${title}</h4>
+              <p class="text-sm text-slate-500 dark:text-zinc-400 mt-1 line-clamp-2">${highlightText(desc, query) || highlightText(context, query)}</p>
+              ${tagsHtml}
+            </a>
+          `;
+        }).join('');
+      }
+
+      function openModal() {
+        const searchModal = document.getElementById('search-modal');
+        const searchBackdrop = document.getElementById('search-backdrop');
+        const searchPanel = document.getElementById('search-panel');
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+        if (!searchModal) return;
+        searchModal.classList.remove('hidden');
+        searchModal.dataset.state = 'open';
+        requestAnimationFrame(() => {
+          searchBackdrop?.classList.replace('opacity-0', 'opacity-100');
+          searchPanel?.classList.remove('opacity-0', 'scale-95');
+          searchPanel?.classList.add('opacity-100', 'scale-100');
+          // 根据输入框实际位置动态计算结果区域最大高度
+          if (searchInput && searchResults) {
+            const inputBottom = searchInput.getBoundingClientRect().bottom;
+            const available = window.innerHeight - inputBottom - 32; // 32px 底部留白
+            searchResults.style.maxHeight = Math.max(available, 80) + 'px';
+          }
+        });
+        searchInput?.focus();
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeModal() {
+        const searchModal = document.getElementById('search-modal');
+        const searchBackdrop = document.getElementById('search-backdrop');
+        const searchPanel = document.getElementById('search-panel');
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+        if (!searchModal) return;
+        searchBackdrop?.classList.replace('opacity-100', 'opacity-0');
+        searchPanel?.classList.remove('opacity-100', 'scale-100');
+        searchPanel?.classList.add('opacity-0', 'scale-95');
+        setTimeout(() => {
+          searchModal.classList.add('hidden');
+          searchModal.dataset.state = 'closed';
+          if (searchInput) searchInput.value = '';
+          if (searchResults) searchResults.innerHTML = '';
+        }, 200);
+        document.body.style.overflow = '';
+      }
+
+      function bindSearchEvents() {
+        const searchTrigger = document.getElementById('search-trigger');
+        const searchBackdrop = document.getElementById('search-backdrop');
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+
+        searchTrigger?.addEventListener('click', openModal);
+        searchBackdrop?.addEventListener('click', closeModal);
+
+        const debouncedSearch = debounce(async (query) => {
+          if (query.length < 1) { searchResults.innerHTML = ''; return; }
+          const hits = await performSearch(query);
+          renderResults(hits, query);
+        }, 150);
+
+        searchInput?.addEventListener('input', (e) => {
+          debouncedSearch(e.target.value.trim());
+        });
+      }
+
+      document.addEventListener('keydown', (e) => {
+        const searchModal = document.getElementById('search-modal');
+        if (e.key === 'Escape' && !searchModal?.classList.contains('hidden')) closeModal();
+        if (e.key === '/' && searchModal?.classList.contains('hidden') && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
+          e.preventDefault();
+          openModal();
+        }
+      });
+
+      initSearch();
+      bindSearchEvents();
+
+      document.addEventListener('astro:page-load', () => {
+        closeModal();
+        bindSearchEvents();
+      });
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  @reference '../styles/global.css';
+
+  :root {
+    --primary: #6528F7;
+  }
+
+  html {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    scroll-behavior: smooth;
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* 打字机光标效果 */
+  #typewriter::after {
+    content: '|';
+    animation: blink 1s infinite;
+    color: var(--primary);
+  }
+
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  #search-results {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  #search-results:hover {
+    scrollbar-color: auto;
+  }
+
+  #search-results::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #search-results::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  #search-results::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 3px;
+  }
+
+  #search-results:hover::-webkit-scrollbar-thumb {
+    @apply bg-slate-200 dark:bg-zinc-700;
+  }
+
+  code {
+    background: #f3eeff;
+    color: var(--primary);
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    code {
+      background: #1a0f33;
+    }
+  }
+
+  pre {
+    @apply bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 p-4 rounded-2xl overflow-x-auto;
+  }
+
+  pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-200 dark:bg-zinc-700 rounded;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-300 dark:bg-zinc-600;
+  }
+
+  /* View Transitions 动画 */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.3s;
+    animation-timing-function: ease-out;
+  }
+
+  /* 侧边栏保持过渡 */
+  ::view-transition-old(aside),
+  ::view-transition-new(aside) {
+    animation: none;
+  }
+</style>

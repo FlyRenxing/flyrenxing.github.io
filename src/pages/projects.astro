@@ -1,0 +1,236 @@
+---
+import Base from '../layouts/Base.astro';
+import Search from '../components/Search.astro';
+import { SITE_CONFIG } from '../config';
+
+const GITHUB_USERNAME = SITE_CONFIG.githubUsername;
+---
+
+<Base title="Projects - 技术项目展示" description="展示我的开源项目和技术作品">
+  <!-- Header -->
+  <header class="flex justify-between items-center mb-8 md:mb-16">
+    <div class="text-xs font-mono uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+      {SITE_CONFIG.siteName} // <span class="text-slate-900 dark:text-zinc-100">Projects</span>
+    </div>
+    <Search />
+  </header>
+
+  <!-- Projects Grid -->
+  <section>
+    <div class="flex items-center justify-between mb-6 md:mb-8">
+      <h2 class="text-xl font-semibold">开源项目</h2>
+      <label class="flex items-center gap-2 text-xs text-slate-500 dark:text-zinc-400 cursor-pointer">
+        <input type="checkbox" id="show-zero-stars" class="w-4 h-4 rounded border-slate-300 dark:border-zinc-600 text-violet-600 focus:ring-violet-500">
+        <span>显示 0 星项目</span>
+      </label>
+    </div>
+
+    <div id="projects-container" class="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
+      <!-- Loading state -->
+      <div class="col-span-full flex items-center justify-center py-12">
+        <div class="flex items-center gap-3 text-slate-400 dark:text-zinc-500">
+          <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span class="font-mono text-sm">加载中...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error state (hidden by default) -->
+    <div id="error-message" class="hidden col-span-full text-center py-12">
+      <p class="text-red-500 dark:text-red-400 font-mono text-sm">加载失败，请稍后重试</p>
+    </div>
+  </section>
+</Base>
+
+<script define:vars={{ GITHUB_USERNAME }}>
+  function getContainer() { return document.getElementById('projects-container'); }
+  function getErrorMessage() { return document.getElementById('error-message'); }
+
+  // 语言颜色映射
+  const languageColors = {
+    JavaScript: '#f1e05a',
+    TypeScript: '#3178c6',
+    Python: '#3572A5',
+    Java: '#b07219',
+    Go: '#00ADD8',
+    Rust: '#dea584',
+    'C++': '#f34b7d',
+    C: '#555555',
+    Ruby: '#701516',
+    PHP: '#4F5D95',
+    Swift: '#F05138',
+    Kotlin: '#A97BFF',
+    Vue: '#41b883',
+    HTML: '#e34c26',
+    CSS: '#563d7c',
+    Shell: '#89e051',
+  };
+
+  function getLanguageColor(language) {
+    return languageColors[language] || '#8b8b8b';
+  }
+
+  function formatNumber(num) {
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'k';
+    }
+    return num;
+  }
+
+  function timeAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+
+    const intervals = [
+      { label: '年', seconds: 31536000 },
+      { label: '月', seconds: 2592000 },
+      { label: '周', seconds: 604800 },
+      { label: '天', seconds: 86400 },
+      { label: '小时', seconds: 3600 },
+      { label: '分钟', seconds: 60 },
+    ];
+
+    for (const interval of intervals) {
+      const count = Math.floor(seconds / interval.seconds);
+      if (count >= 1) {
+        return `${count}${interval.label}前`;
+      }
+    }
+    return '刚刚';
+  }
+
+  function renderProject(project) {
+    return `
+      <a href="${project.html_url}" target="_blank" rel="noopener noreferrer"
+         class="block bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-5 hover:shadow-lg hover:border-violet-300 dark:hover:border-violet-700 transition-all duration-300 group">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <h3 class="font-semibold text-slate-900 dark:text-zinc-100 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors truncate flex-1 min-w-0">
+            ${project.name}
+          </h3>
+          <div class="flex items-center gap-1 text-xs text-slate-500 dark:text-zinc-400 shrink-0">
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/>
+            </svg>
+            <span>${formatNumber(project.stargazers_count)}</span>
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-500 dark:text-zinc-400 line-clamp-2 mb-4 min-h-[2.5em]">
+          ${project.description || '暂无描述'}
+        </p>
+
+        <div class="flex items-center gap-4 text-xs text-slate-400 dark:text-zinc-500">
+          ${project.language ? `
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${getLanguageColor(project.language)}"></span>
+              <span>${project.language}</span>
+            </div>
+          ` : ''}
+          <div class="flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M5 3.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0zm0 2.122a2.25 2.25 0 1 0-1.5 0v.878A2.25 2.25 0 0 0 5.75 8.5h1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h1.5a2.25 2.25 0 0 0 2.25-2.25v-.878a2.25 2.25 0 1 0-1.5 0v.878a.75.75 0 0 1-.75.75h-4.5A.75.75 0 0 1 5 6.25v-.878zm3.75 7.378a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0zm3-8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0z"/>
+            </svg>
+            <span>${formatNumber(project.forks_count)}</span>
+          </div>
+          <!-- <span class="ml-auto">${timeAgo(project.pushed_at)}</span> -->
+        </div>
+
+        ${project.topics && project.topics.length > 0 ? `
+          <div class="flex gap-1.5 mt-3 flex-wrap max-h-0 overflow-hidden group-hover:max-h-20 transition-[max-height] duration-300 ease-in-out">
+            ${project.topics.slice(0, 3).map(topic => `
+              <span class="text-xs text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 px-1.5 py-0.5 rounded">${topic}</span>
+            `).join('')}
+          </div>
+        ` : ''}
+      </a>
+    `;
+  }
+
+  const CACHE_KEY = `github_repos_${GITHUB_USERNAME}`;
+  const CACHE_TTL = 60 * 60 * 1000; // 1 小时
+
+  function getCachedProjects() {
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (!raw) return null;
+      const { timestamp, data } = JSON.parse(raw);
+      if (Date.now() - timestamp > CACHE_TTL) return null;
+      return data;
+    } catch {
+      return null;
+    }
+  }
+
+  function setCachedProjects(data) {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
+    } catch { /* quota exceeded, ignore */ }
+  }
+
+  async function fetchProjects() {
+    const cached = getCachedProjects();
+    if (cached) return cached;
+
+    const response = await fetch(
+      `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=stars&per_page=100&type=owner`,
+      { headers: { 'Accept': 'application/vnd.github.v3+json' } }
+    );
+
+    if (!response.ok) throw new Error('Failed to fetch projects');
+
+    const projects = await response.json();
+    projects.sort((a, b) => b.stargazers_count - a.stargazers_count);
+    setCachedProjects(projects);
+    return projects;
+  }
+
+  async function loadProjects() {
+    const container = getContainer();
+    const errorMessage = getErrorMessage();
+    if (!container) return;
+    try {
+      const projects = await fetchProjects();
+
+      const showZeroStars = document.getElementById('show-zero-stars')?.checked || false;
+      const filteredProjects = showZeroStars
+        ? projects
+        : projects.filter(p => p.stargazers_count > 0);
+
+      if (filteredProjects.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full text-center py-12">
+            <p class="text-slate-400 dark:text-zinc-500 font-mono text-sm">暂无项目</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filteredProjects.map(renderProject).join('');
+    } catch (error) {
+      console.error('Failed to load projects:', error);
+      container.classList.add('hidden');
+      if (errorMessage) errorMessage.classList.remove('hidden');
+    }
+  }
+
+  // 首次加载
+  loadProjects();
+
+  // 复选框事件
+  document.addEventListener('change', (e) => {
+    if (e.target.id === 'show-zero-stars') {
+      loadProjects();
+    }
+  });
+
+  // View Transitions: 页面切换后，如果项目页可见则渲染（缓存命中，无需请求）
+  document.addEventListener('astro:after-swap', () => {
+    if (document.getElementById('projects-container')) {
+      loadProjects();
+    }
+  });
+</script>

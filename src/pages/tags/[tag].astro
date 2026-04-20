@@ -1,0 +1,100 @@
+---
+import Base from '../../layouts/Base.astro';
+import Search from '../../components/Search.astro';
+import { getCollection } from 'astro:content';
+import { SITE_CONFIG } from '../../config';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+
+  // 收集所有标签
+  const tags = new Set<string>();
+  posts.forEach(post => {
+    if (post.data.tags) {
+      post.data.tags.forEach(tag => tags.add(tag));
+    }
+  });
+
+  return Array.from(tags).map(tag => ({
+    params: { tag },
+    props: {
+      tag,
+      posts: posts
+        .filter(post => post.data.tags?.includes(tag))
+        .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
+    },
+  }));
+}
+
+const { tag, posts } = Astro.props;
+---
+
+<Base title={`#${tag} - 标签文章`} description={`包含 #${tag} 标签的所有文章`}>
+  <!-- Header -->
+  <header class="flex justify-between items-center mb-8 md:mb-16">
+    <div class="text-xs font-mono uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+      {SITE_CONFIG.siteName} // <span class="text-slate-900 dark:text-zinc-100">Tag</span>
+    </div>
+    <Search />
+  </header>
+
+  <!-- Tag Header -->
+  <div class="mb-8 md:mb-12">
+    <div class="flex items-center gap-3 mb-4">
+      <span class="text-3xl md:text-4xl">#</span>
+      <h1 class="text-2xl md:text-3xl font-bold text-violet-600 dark:text-violet-400">{tag}</h1>
+    </div>
+    <p class="text-slate-500 dark:text-zinc-400">
+      共 {posts.length} 篇文章
+    </p>
+  </div>
+
+  <!-- Posts List -->
+  <section>
+    {posts.length > 0 ? (
+      <div class="relative pl-6 md:pl-8 before:absolute before:left-[7px] before:top-0 before:bottom-0 before:w-0.5 before:bg-gradient-to-b before:from-violet-600 before:to-slate-200 dark:before:to-zinc-700">
+        {posts.map((post) => (
+          <article class="relative pb-5 md:pb-6 last:pb-0 group">
+            <!-- Marker -->
+            <div class="absolute -left-6 md:-left-8 top-1 w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-violet-600 border-2 border-white dark:border-zinc-950 shadow-[0_0_0_2px_#6528F7]"></div>
+
+            <!-- Content Card -->
+            <a href={`/blog/${post.id.replace(/\.mdx?$/, '')}`} class="block bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl md:rounded-2xl p-4 md:p-5 hover:shadow-lg hover:-translate-x-1 transition-all duration-300">
+              <div class="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
+                <time datetime={post.data.pubDate.toISOString()} class="text-xs md:text-sm text-slate-400 dark:text-zinc-500 font-medium">
+                  {post.data.pubDate.toLocaleDateString('zh-CN')}
+                </time>
+                {post.data.aiGenerated && (
+                  <span class="text-xs px-1.5 md:px-2 py-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded font-medium">AI</span>
+                )}
+              </div>
+              <h3 class="text-base md:text-lg font-semibold mb-1.5 md:mb-2 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{post.data.title}</h3>
+              <p class="text-xs md:text-sm text-slate-500 dark:text-zinc-400 line-clamp-2 mb-2 md:mb-3">{post.data.description}</p>
+              {post.data.tags && post.data.tags.length > 0 && (
+                <div class="flex gap-1.5 md:gap-2 flex-wrap">
+                  {post.data.tags.slice(0, 3).map((t) => (
+                    <span class={`text-xs px-1.5 md:px-2 py-0.5 rounded ${t === tag ? 'bg-violet-600 text-white' : 'text-violet-600 bg-violet-50 dark:bg-violet-950 dark:text-violet-400'}`}>#{t}</span>
+                  ))}
+                </div>
+              )}
+            </a>
+          </article>
+        ))}
+      </div>
+    ) : (
+      <div class="text-center py-12">
+        <p class="text-slate-400 dark:text-zinc-500 font-mono text-sm">暂无文章</p>
+      </div>
+    )}
+  </section>
+
+  <!-- Back Link -->
+  <div class="mt-8">
+    <a href="/" class="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-zinc-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      </svg>
+      返回首页
+    </a>
+  </div>
+</Base>

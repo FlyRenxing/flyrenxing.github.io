@@ -1,0 +1,119 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+  return posts.map((post) => ({
+    params: { slug: post.id.replace(/\.mdx?$/, '') },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+// 计算阅读时间（假设每分钟阅读 300 字）
+const wordCount = post.body?.length || 0;
+const readTime = Math.max(1, Math.ceil(wordCount / 300));
+
+// 格式化日期
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).replace(/\//g, '.');
+};
+---
+
+<Base title={post.data.title} description={post.data.description}>
+  <article class="max-w-3xl mx-auto">
+    <!-- Article Header -->
+    <header class="mb-8 md:mb-12">
+      <!-- Meta Info Grid -->
+      <div class="font-mono text-xs text-slate-400 dark:text-zinc-500 space-y-1.5 md:space-y-2 mb-6 md:mb-8">
+        {post.data.tags && post.data.tags.length > 0 && (
+          <div class="flex flex-wrap items-start gap-x-2 gap-y-1">
+            <span class="text-slate-500 dark:text-zinc-400 w-20 md:w-24 shrink-0">TAGS</span>
+            <span class="text-slate-900 dark:text-zinc-100 flex flex-wrap gap-x-3 gap-y-1">
+              {post.data.tags.map((tag) => (
+                <a href={`/tags/${tag}`} class="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">#{tag}</a>
+              ))}
+            </span>
+          </div>
+        )}
+        <div class="flex items-center gap-2">
+          <span class="text-slate-500 dark:text-zinc-400 w-20 md:w-24 shrink-0">CREATED</span>
+          <span class="text-slate-900 dark:text-zinc-100">{formatDate(post.data.pubDate)}</span>
+        </div>
+        {post.data.updatedDate && (
+          <div class="flex items-center gap-2">
+            <span class="text-slate-500 dark:text-zinc-400 w-20 md:w-24 shrink-0">UPDATED</span>
+            <span class="text-slate-900 dark:text-zinc-100">{formatDate(post.data.updatedDate)}</span>
+          </div>
+        )}
+        <div class="flex items-center gap-2">
+          <span class="text-slate-500 dark:text-zinc-400 w-20 md:w-24 shrink-0">READ_TIME</span>
+          <span class="text-slate-900 dark:text-zinc-100">{readTime} MIN</span>
+        </div>
+      </div>
+
+      <!-- Title -->
+      <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-zinc-100 mb-3 md:mb-4 leading-tight">
+        {post.data.title}
+      </h1>
+
+      <!-- Description -->
+      {post.data.description && (
+        <p class="text-base md:text-lg text-slate-500 dark:text-zinc-400 leading-relaxed">
+          {post.data.description}
+        </p>
+      )}
+    </header>
+
+    <!-- Hero Image -->
+    {post.data.heroImage && (
+      <div class="mb-8 md:mb-12 rounded-xl md:rounded-2xl overflow-hidden -mx-6 md:mx-0">
+        <img src={post.data.heroImage} alt={post.data.title} class="w-full h-auto" />
+      </div>
+    )}
+
+    <!-- Article Content -->
+    <div class="prose prose-slate dark:prose-invert max-w-none
+      prose-headings:text-slate-900 dark:prose-headings:text-zinc-100
+      prose-h2:mt-10 md:prose-h2:mt-12 prose-h2:mb-4 md:prose-h2:mb-6 prose-h2:pt-6 md:prose-h2:pt-8 prose-h2:border-t prose-h2:border-slate-200 dark:prose-h2:border-zinc-800
+      prose-h3:mt-6 md:prose-h3:mt-8 prose-h3:mb-3 md:prose-h3:mb-4
+      prose-p:mb-4 md:prose-p:mb-6 prose-p:leading-relaxed prose-p:text-sm md:prose-p:text-base
+      prose-a:text-violet-600 dark:prose-a:text-violet-400 prose-a:underline prose-a:underline-offset-2
+      prose-blockquote:border-l-violet-500 prose-blockquote:bg-violet-50 dark:prose-blockquote:bg-violet-950/30 prose-blockquote:rounded-r-lg prose-blockquote:py-3 md:prose-blockquote:py-4 prose-blockquote:px-4 md:prose-blockquote:px-6 prose-blockquote:not-italic
+      prose-pre:bg-slate-900 dark:prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-slate-200 dark:prose-pre:border-zinc-800 prose-pre:text-sm
+      prose-code:text-violet-600 dark:prose-code:text-violet-400 prose-code:bg-violet-50 dark:prose-code:bg-violet-950 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none prose-code:text-sm
+      prose-img:rounded-xl md:prose-img:rounded-2xl
+      prose-li:text-sm md:prose-li:text-base
+      prose-ul:mb-4 md:prose-ul:mb-6
+      prose-ol:mb-4 md:prose-ol:mb-6
+    ">
+      <Content />
+    </div>
+
+    <!-- AI Summary -->
+    {post.data.summary && (
+      <aside class="mt-8 md:mt-12 p-4 md:p-6 bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 border border-slate-200 dark:border-zinc-800 rounded-xl md:rounded-2xl">
+        <div class="flex items-center gap-2 mb-2 md:mb-3">
+          <span class="text-lg md:text-xl">✨</span>
+          <h3 class="text-xs md:text-sm font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-wide">AI 摘要</h3>
+        </div>
+        <p class="text-sm md:text-base text-slate-600 dark:text-zinc-300 leading-relaxed m-0">{post.data.summary}</p>
+      </aside>
+    )}
+  </article>
+
+  <!-- Back Navigation -->
+  <nav class="max-w-3xl mx-auto mt-12 md:mt-16 pt-6 md:pt-8 border-t border-slate-200 dark:border-zinc-800">
+    <a href="/" class="inline-flex items-center gap-2 px-4 md:px-5 py-2.5 md:py-3 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-lg md:rounded-xl text-sm md:text-base text-slate-500 dark:text-zinc-400 font-medium hover:bg-violet-50 dark:hover:bg-violet-950 hover:border-violet-300 dark:hover:border-violet-700 hover:text-violet-600 dark:hover:text-violet-400 transition-all">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      返回首页
+    </a>
+  </nav>
+</Base>

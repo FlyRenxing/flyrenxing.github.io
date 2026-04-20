@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+import Search from '../components/Search.astro';
+import { SITE_CONFIG } from '../config';
+
+const GITHUB_USERNAME = SITE_CONFIG.githubUsername;
+---
+
+<Base title="About - 关于我" description="关于我">
+  <!-- Header -->
+  <header class="flex justify-between items-center mb-8 md:mb-16">
+    <div class="text-xs font-mono uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+      {SITE_CONFIG.siteName} // <span class="text-slate-900 dark:text-zinc-100">About</span>
+    </div>
+    <Search />
+  </header>
+
+  <!-- About Content -->
+  <section class="max-w-2xl">
+    <div class="prose dark:prose-invert prose-slate max-w-none">
+      <h2 class="text-xl font-semibold mb-4">你好</h2>
+
+      <p class="text-slate-600 dark:text-zinc-400 mb-4">
+        我是一名热爱技术的开发者，喜欢探索新技术，折腾各种有趣的项目。
+      </p>
+
+      <h3 class="text-lg font-semibold mt-8 mb-3">技术栈</h3>
+      <div class="flex flex-wrap gap-2 mb-4">
+        <span class="px-2 py-1 bg-slate-100 dark:bg-zinc-800 text-xs rounded">JavaScript</span>
+        <span class="px-2 py-1 bg-slate-100 dark:bg-zinc-800 text-xs rounded">TypeScript</span>
+        <span class="px-2 py-1 bg-slate-100 dark:bg-zinc-800 text-xs rounded">React</span>
+        <span class="px-2 py-1 bg-slate-100 dark:bg-zinc-800 text-xs rounded">Vue</span>
+        <span class="px-2 py-1 bg-slate-100 dark:bg-zinc-800 text-xs rounded">Node.js</span>
+        <span class="px-2 py-1 bg-slate-100 dark:bg-zinc-800 text-xs rounded">Python</span>
+        <span class="px-2 py-1 bg-slate-100 dark:bg-zinc-800 text-xs rounded">Go</span>
+      </div>
+
+      <h3 class="text-lg font-semibold mt-8 mb-3">联系我</h3>
+      <p class="text-slate-600 dark:text-zinc-400 mb-4">
+        你可以通过以下方式找到我：
+      </p>
+      <ul class="list-disc list-inside space-y-1 text-slate-600 dark:text-zinc-400">
+        <li>GitHub: <a href={`https://github.com/${GITHUB_USERNAME}`} class="text-violet-600 hover:underline">@{GITHUB_USERNAME}</a></li>
+        <li>Email: your@email.com</li>
+      </ul>
+    </div>
+  </section>
+</Base>

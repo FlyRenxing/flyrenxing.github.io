@@ -1,0 +1,111 @@
+---
+import Base from '../layouts/Base.astro';
+import Search from '../components/Search.astro';
+import { getCollection } from 'astro:content';
+import { SITE_CONFIG } from '../config';
+
+const posts = (await getCollection('posts'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+// 收集所有标签及对应文章数
+const tags = new Map<string, number>();
+posts.forEach(post => {
+  if (post.data.tags) {
+    post.data.tags.forEach(tag => {
+      tags.set(tag, (tags.get(tag) || 0) + 1);
+    });
+  }
+});
+
+// 按文章数排序
+const sortedTags = Array.from(tags.entries()).sort((a, b) => b[1] - a[1]);
+
+// 按年份分组
+const postsByYear = posts.reduce((acc, post) => {
+  const year = post.data.pubDate.getFullYear();
+  if (!acc[year]) {
+    acc[year] = [];
+  }
+  acc[year].push(post);
+  return acc;
+}, {});
+
+const years = Object.keys(postsByYear).sort((a, b) => b - a);
+---
+
+<Base title="Articles - 所有文章" description="技术博客文章列表">
+  <!-- Header -->
+  <header class="flex justify-between items-center mb-8 md:mb-16">
+    <div class="text-xs font-mono uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+      {SITE_CONFIG.siteName} // <span class="text-slate-900 dark:text-zinc-100">Articles</span>
+    </div>
+    <Search />
+  </header>
+
+  <!-- Tags Grid -->
+  <section class="mb-10 md:mb-14">
+    <h2 class="text-lg font-semibold mb-4 md:mb-6 flex items-center gap-3">
+      <span class="text-violet-600 dark:text-violet-400 font-mono">Tags</span>
+      <span class="h-px flex-1 bg-slate-200 dark:bg-zinc-800"></span>
+      <span class="text-xs text-slate-400 dark:text-zinc-500 font-mono">{tags.size} 个标签</span>
+    </h2>
+
+    {sortedTags.length > 0 ? (
+      <div class="flex flex-wrap gap-3">
+        {sortedTags.map(([tag, count]) => (
+          <a href={`/tags/${tag}`} class="flex items-center gap-2 px-3 py-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-md transition-all duration-200 group">
+            <span class="text-sm text-slate-700 dark:text-zinc-300 group-hover:text-violet-600 dark:group-hover:text-violet-400">#{tag}</span>
+            <span class="text-xs text-slate-400 dark:text-zinc-500">{count}</span>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <div class="text-center py-6">
+        <p class="text-slate-400 dark:text-zinc-500 font-mono text-sm">暂无标签</p>
+      </div>
+    )}
+  </section>
+
+  <!-- Articles by Year -->
+  <section>
+    {years.map((year) => (
+      <div class="mb-10 md:mb-14">
+        <h2 class="text-lg font-semibold mb-4 md:mb-6 flex items-center gap-3">
+          <span class="text-violet-600 dark:text-violet-400 font-mono">{year}</span>
+          <span class="h-px flex-1 bg-slate-200 dark:bg-zinc-800"></span>
+          <span class="text-xs text-slate-400 dark:text-zinc-500 font-mono">{postsByYear[year].length} 篇</span>
+        </h2>
+
+        <div class="space-y-3">
+          {postsByYear[year].map((post) => (
+            <a href={`/blog/${post.id.replace(/\.mdx?$/, '')}`}
+               class="flex items-center gap-4 p-3 -mx-3 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors group">
+              <time datetime={post.data.pubDate.toISOString()} class="text-xs text-slate-400 dark:text-zinc-500 font-mono w-20 shrink-0">
+                {post.data.pubDate.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })}
+              </time>
+              <h3 class="flex-1 text-sm text-slate-700 dark:text-zinc-300 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors line-clamp-1">
+                {post.data.title}
+              </h3>
+              {post.data.aiGenerated && (
+                <span class="text-xs px-1.5 py-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded shrink-0">AI</span>
+              )}
+              {post.data.tags && post.data.tags.length > 0 && (
+                <div class="hidden md:flex gap-1 shrink-0">
+                  {post.data.tags.slice(0, 2).map((tag) => (
+                    <span class="text-xs text-violet-600 dark:text-violet-400">#{tag}</span>
+                  ))}
+                </div>
+              )}
+            </a>
+          ))}
+        </div>
+      </div>
+    ))}
+  </section>
+
+  {posts.length === 0 && (
+    <div class="text-center py-12">
+      <p class="text-slate-400 dark:text-zinc-500 font-mono text-sm">暂无文章</p>
+    </div>
+  )}
+</Base>
