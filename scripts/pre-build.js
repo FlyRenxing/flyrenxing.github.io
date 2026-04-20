@@ -193,7 +193,7 @@ async function generateSummaryWithAI(title, content) {
             content: `标题：${title}\n\n内容：${content.slice(0, 2000)}`
           }
         ],
-        max_tokens: 500,
+        max_tokens: 2048,
         temperature: 0.7,
       }),
     });
