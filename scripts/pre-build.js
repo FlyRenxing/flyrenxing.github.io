@@ -193,7 +193,7 @@ async function generateSummaryWithAI(title, content) {
             content: `标题：${title}\n\n内容：${content.slice(0, 2000)}`
           }
         ],
-        max_tokens: 200,
+        max_tokens: 1024,
         temperature: 0.7,
       }),
     });
@@ -206,7 +206,8 @@ async function generateSummaryWithAI(title, content) {
       console.log(`❌ API 返回格式异常: ${JSON.stringify(data).slice(0, 300)}`);
       return null;
     }
-    const messageContent = data.choices[0].message?.content;
+    const msg = data.choices[0].message;
+    const messageContent = msg?.content || msg?.reasoning_content;
     if (!messageContent) {
       console.log(`❌ API 返回内容为空: ${JSON.stringify(data.choices[0]).slice(0, 300)}`);
       return null;
