@@ -193,7 +193,7 @@ async function generateSummaryWithAI(title, content) {
             content: `标题：${title}\n\n内容：${content.slice(0, 2000)}`
           }
         ],
-        max_tokens: 2048,
+        max_tokens: 8192,
         temperature: 0.7,
       }),
     });
@@ -333,6 +333,13 @@ async function main() {
     if (aiSummary) {
       summary = aiSummary;
       console.log(`   🤖 AI 摘要: ${summary.slice(0, 50)}...`);
+      // 写回 MDX frontmatter，让 Astro content collection 能读到
+      let fileContent = fs.readFileSync(filePath, 'utf-8');
+      fileContent = fileContent.replace(
+        /^---\n/,
+        `---\nsummary: "${aiSummary.replace(/"/g, '\\"').replace(/\n/g, ' ')}"\n`
+      );
+      fs.writeFileSync(filePath, fileContent);
     }
 
     posts.push({
