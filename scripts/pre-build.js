@@ -207,12 +207,13 @@ async function generateSummaryWithAI(title, content) {
       return null;
     }
     const msg = data.choices[0].message;
-    const messageContent = msg?.content || msg?.reasoning_content;
-    if (!messageContent) {
-      console.log(`❌ API 返回内容为空: ${JSON.stringify(data.choices[0]).slice(0, 300)}`);
-      return null;
+    // 推理模型：content 为最终回答，reasoning_content 为思考过程
+    // 如果 content 为空，说明推理未完成，增大 token 或换非推理模型
+    if (msg?.content) {
+      return msg.content.trim();
     }
-    return messageContent.trim();
+    console.log(`❌ API content 为空 (finish_reason=${data.choices[0].finish_reason})，推理未完成或模型返回异常`);
+    return null;
   } catch (error) {
     console.log(`❌ AI 摘要生成失败: ${error.message}`);
     return null;
