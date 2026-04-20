@@ -206,12 +206,12 @@ async function generateSummaryWithAI(title, content) {
       console.log(`❌ API 返回格式异常: ${JSON.stringify(data).slice(0, 300)}`);
       return null;
     }
-    const content = data.choices[0].message?.content;
-    if (!content) {
+    const messageContent = data.choices[0].message?.content;
+    if (!messageContent) {
       console.log(`❌ API 返回内容为空: ${JSON.stringify(data.choices[0]).slice(0, 300)}`);
       return null;
     }
-    return content.trim();
+    return messageContent.trim();
   } catch (error) {
     console.log(`❌ AI 摘要生成失败: ${error.message}`);
     return null;
