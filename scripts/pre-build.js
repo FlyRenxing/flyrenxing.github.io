@@ -182,7 +182,7 @@ async function generateSummaryWithAI(title, content) {
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'glm-5.1',
+        model: 'GLM-4.7-Flash',
         messages: [
           {
             role: 'system',
@@ -193,7 +193,7 @@ async function generateSummaryWithAI(title, content) {
             content: `标题：${title}\n\n内容：${content.slice(0, 2000)}`
           }
         ],
-        max_tokens: 1024,
+        max_tokens: 500,
         temperature: 0.7,
       }),
     });
