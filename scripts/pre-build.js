@@ -199,7 +199,6 @@ async function generateSummaryWithAI(title, content) {
     });
 
     const data = await response.json();
-    console.log(`   🔎 API 响应: status=${response.status}, has_choices=${!!data.choices}, keys=${Object.keys(data).join(',')}`);
     if (!response.ok) {
       throw new Error(`API Error: ${response.status} - ${JSON.stringify(data).slice(0, 200)}`);
     }
@@ -207,7 +206,12 @@ async function generateSummaryWithAI(title, content) {
       console.log(`❌ API 返回格式异常: ${JSON.stringify(data).slice(0, 300)}`);
       return null;
     }
-    return data.choices[0].message.content.trim();
+    const content = data.choices[0].message?.content;
+    if (!content) {
+      console.log(`❌ API 返回内容为空: ${JSON.stringify(data.choices[0]).slice(0, 300)}`);
+      return null;
+    }
+    return content.trim();
   } catch (error) {
     console.log(`❌ AI 摘要生成失败: ${error.message}`);
     return null;
