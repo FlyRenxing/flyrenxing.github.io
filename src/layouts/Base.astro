@@ -162,14 +162,34 @@ const { siteName } = SITE_CONFIG;
         setTimeout(typeWriter, 500);
       }
 
+      // AI 摘要打字机效果
+      function initSummaryTypewriter() {
+        const summaryEl = document.getElementById('ai-summary');
+        if (!summaryEl) return;
+        const text = summaryEl.dataset.summary || '';
+        if (!text || summaryEl.textContent.length > 0) return;
+
+        let charIndex = 0;
+        function type() {
+          if (charIndex < text.length) {
+            summaryEl.textContent = text.slice(0, charIndex + 1);
+            charIndex++;
+            setTimeout(type, 30);
+          }
+        }
+        setTimeout(type, 200);
+      }
+
       // 首次加载
       initLucide();
       initTypewriter();
+      initSummaryTypewriter();
 
       // View Transitions: 页面切换时重新初始化
       document.addEventListener('astro:page-load', () => {
         initLucide();
         initTypewriter();
+        initSummaryTypewriter();
       });
     </script>
 

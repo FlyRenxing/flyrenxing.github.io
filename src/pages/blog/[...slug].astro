@@ -72,13 +72,6 @@ const formatDate = (date: Date) => {
       )}
     </header>
 
-    <!-- Hero Image -->
-    {post.data.heroImage && (
-      <div class="mb-8 md:mb-12 rounded-xl md:rounded-2xl overflow-hidden -mx-6 md:mx-0">
-        <img src={post.data.heroImage} alt={post.data.title} class="w-full h-auto" />
-      </div>
-    )}
-
     <!-- AI Summary -->
     {post.data.summary && (
       <aside class="mb-8 md:mb-12 p-4 md:p-6 bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 border border-slate-200 dark:border-zinc-800 rounded-xl md:rounded-2xl">
@@ -86,8 +79,15 @@ const formatDate = (date: Date) => {
           <span class="text-lg md:text-xl">✨</span>
           <h3 class="text-xs md:text-sm font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-wide">AI 摘要</h3>
         </div>
-        <p class="text-sm md:text-base text-slate-600 dark:text-zinc-300 leading-relaxed m-0">{post.data.summary}</p>
+        <p id="ai-summary" class="text-sm md:text-base text-slate-600 dark:text-zinc-300 leading-relaxed m-0" data-summary={post.data.summary}></p>
       </aside>
+    )}
+
+    <!-- Hero Image -->
+    {post.data.heroImage && (
+      <div class="mb-8 md:mb-12 rounded-xl md:rounded-2xl overflow-hidden -mx-6 md:mx-0">
+        <img src={post.data.heroImage} alt={post.data.title} class="w-full h-auto" />
+      </div>
     )}
 
     <!-- Article Content -->
