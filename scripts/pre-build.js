@@ -199,10 +199,15 @@ async function generateSummaryWithAI(title, content) {
     });
 
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status}`);
+      const errText = await response.text();
+      throw new Error(`API Error: ${response.status} - ${errText}`);
     }
 
     const data = await response.json();
+    if (!data.choices || !data.choices[0]) {
+      console.error('❌ API 返回格式异常:', JSON.stringify(data).slice(0, 200));
+      return null;
+    }
     return data.choices[0].message.content.trim();
   } catch (error) {
     console.error('❌ AI 摘要生成失败:', error.message);
