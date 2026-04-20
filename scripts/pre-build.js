@@ -16,6 +16,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 import { create, insert, save } from '@orama/orama';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -286,6 +287,35 @@ async function main() {
     const tags = data.tags || [];
 
     console.log(`📝 处理: ${title}`);
+
+    // 自动注入 updatedDate：用 git log 获取文件最后提交时间
+    if (!data.updatedDate) {
+      try {
+        // CI 环境：content-repo checkout 到 content-repo/ 子目录
+        // 本地开发：content-repo 在 ../content-repo/
+        const contentRepoDir = path.join(ROOT_DIR, 'content-repo');
+        const gitCwd = fs.existsSync(path.join(contentRepoDir, '.git')) ? contentRepoDir : ROOT_DIR;
+        const gitPath = gitCwd === contentRepoDir
+          ? `content/posts/${file}`
+          : `content-repo/content/posts/${file}`;
+        const gitDate = execSync(
+          `git log -1 --format="%aI" -- ${gitPath}`,
+          { encoding: 'utf-8', cwd: gitCwd }
+        ).trim();
+        if (gitDate) {
+          const dateStr = gitDate.slice(0, 10);
+          const updatedContent = content.replace(
+            /^---\n/,
+            `---\nupdatedDate: ${dateStr}\n`
+          );
+          fs.writeFileSync(filePath, updatedContent);
+          data.updatedDate = gitDate;
+          console.log(`   📅 注入 updatedDate: ${dateStr}`);
+        }
+      } catch (e) {
+        // git log 失败（本地无 git）则忽略
+      }
+    }
 
     // 生成 AI 摘要
     let summary = data.summary;

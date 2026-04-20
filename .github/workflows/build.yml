@@ -29,6 +29,7 @@ jobs:
           repository: FlyRenxing/content-repo
           path: content-repo
           token: ${{ secrets.CONTENT_REPO_TOKEN }}
+          fetch-depth: 0
 
       - name: Sync Content
         run: |
