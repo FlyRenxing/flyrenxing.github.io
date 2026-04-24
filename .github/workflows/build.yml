@@ -56,6 +56,7 @@ jobs:
         run: node scripts/pre-build.js
         env:
           ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
+          SILICONFLOW_KEY: ${{ secrets.SILICONFLOW_KEY }}
 
       - name: Build Astro
         run: npm run build

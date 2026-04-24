@@ -382,6 +382,81 @@ function checkHeroImageExists(slug) {
 }
 
 /**
+ * 推送变更到 content-repo
+ * 将生成的摘要、hero 图片等推送回内容仓库
+ */
+async function pushChangesToContentRepo(changes) {
+  const { articles, heroImages } = changes;
+
+  // 检查是否有变更
+  if (articles.length === 0 && heroImages.length === 0) {
+    console.log('\n📤 没有新的 AI 内容需要推送');
+    return;
+  }
+
+  // 检查是否在 CI 环境
+  const isCI = process.env.CI || process.env.GITHUB_ACTIONS;
+  if (!isCI) {
+    console.log('\n📤 本地环境，跳过推送到 content-repo');
+    console.log(`   变更的文章: ${articles.join(', ') || '无'}`);
+    console.log(`   新增的 Hero 图片: ${heroImages.join(', ') || '无'}`);
+    return;
+  }
+
+  const contentRepoDir = path.join(ROOT_DIR, 'content-repo');
+  if (!fs.existsSync(path.join(contentRepoDir, '.git'))) {
+    console.log('\n⚠️  content-repo 不是 git 仓库，跳过推送');
+    return;
+  }
+
+  const token = process.env.CONTENT_REPO_TOKEN;
+  if (!token) {
+    console.log('\n⚠️  CONTENT_REPO_TOKEN 未配置，跳过推送');
+    return;
+  }
+
+  console.log('\n📤 推送 AI 内容到 content-repo...');
+
+  try {
+    // 复制变更的文章到 content-repo
+    for (const file of articles) {
+      const srcPath = path.join(CONTENT_DIR, file);
+      const destPath = path.join(contentRepoDir, 'content', 'posts', file);
+      fs.mkdirSync(path.dirname(destPath), { recursive: true });
+      fs.copyFileSync(srcPath, destPath);
+      console.log(`   📄 复制文章: ${file}`);
+    }
+
+    // 复制 hero 图片到 content-repo
+    const heroDestDir = path.join(contentRepoDir, 'content', 'images', 'hero');
+    fs.mkdirSync(heroDestDir, { recursive: true });
+    for (const heroPath of heroImages) {
+      const srcPath = path.join(PUBLIC_DIR, heroPath);
+      const destPath = path.join(contentRepoDir, 'content', heroPath);
+      fs.copyFileSync(srcPath, destPath);
+      console.log(`   🖼️  复制图片: ${heroPath}`);
+    }
+
+    // Git 提交和推送
+    execSync('git config user.name "github-actions[bot]"', { cwd: contentRepoDir });
+    execSync('git config user.email "github-actions[bot]@users.noreply.github.com"', { cwd: contentRepoDir });
+
+    // 更新远程 URL 使用 token
+    const repoUrl = execSync('git remote get-url origin', { cwd: contentRepoDir, encoding: 'utf-8' }).trim();
+    const authUrl = repoUrl.replace('https://', `https://x-access-token:${token}@`);
+    execSync(`git remote set-url origin ${authUrl}`, { cwd: contentRepoDir });
+
+    execSync('git add .', { cwd: contentRepoDir });
+    execSync('git commit -m "chore: auto-generate AI summary and hero images [skip ci]"', { cwd: contentRepoDir });
+    execSync('git push origin main', { cwd: contentRepoDir });
+
+    console.log('   ✅ 已推送到 content-repo');
+  } catch (error) {
+    console.log(`   ❌ 推送失败: ${error.message}`);
+  }
+}
+
+/**
  * 构建搜索索引
  */
 async function buildSearchIndex(posts) {
@@ -451,6 +526,10 @@ async function main() {
   console.log(`📄 找到 ${files.length} 篇文章\n`);
 
   const posts = [];
+  const changes = {
+    articles: [],      // 有变更的文章文件名
+    heroImages: [],    // 新生成的 hero 图片路径
+  };
 
   for (const file of files) {
     const filePath = path.join(CONTENT_DIR, file);
@@ -461,6 +540,7 @@ async function main() {
     const title = data.title || slug;
     const description = data.description || '';
     const tags = data.tags || [];
+    let hasChanges = false;
 
     console.log(`📝 处理: ${title}`);
 
@@ -493,19 +573,24 @@ async function main() {
       }
     }
 
-    // 生成 AI 摘要
+    // 生成 AI 摘要（仅在缺失时生成）
     let summary = data.summary;
-    const aiSummary = await generateSummaryWithAI(title, body);
-    if (aiSummary) {
-      summary = aiSummary;
-      console.log(`   🤖 AI 摘要: ${summary.slice(0, 50)}...`);
-      // 写回 MDX frontmatter，让 Astro content collection 能读到
-      let fileContent = fs.readFileSync(filePath, 'utf-8');
-      fileContent = fileContent.replace(
-        /^---\n/,
-        `---\nsummary: "${aiSummary.replace(/"/g, '\\"').replace(/\n/g, ' ')}"\n`
-      );
-      fs.writeFileSync(filePath, fileContent);
+    if (!summary) {
+      const aiSummary = await generateSummaryWithAI(title, body);
+      if (aiSummary) {
+        summary = aiSummary;
+        console.log(`   🤖 AI 摘要: ${summary.slice(0, 50)}...`);
+        // 写回 MDX frontmatter
+        let fileContent = fs.readFileSync(filePath, 'utf-8');
+        fileContent = fileContent.replace(
+          /^---\n/,
+          `---\nsummary: "${aiSummary.replace(/"/g, '\\"').replace(/\n/g, ' ')}"\n`
+        );
+        fs.writeFileSync(filePath, fileContent);
+        hasChanges = true;
+      }
+    } else {
+      console.log(`   ✓ 摘要已存在，跳过生成`);
     }
 
     // 生成 Hero 图片
@@ -513,7 +598,7 @@ async function main() {
     const hasCustomHero = heroImage && !heroImage.startsWith('/images/hero/');
     const heroExists = checkHeroImageExists(slug);
 
-    if (!hasCustomHero && !heroExists) {
+    if (!hasCustomHero && !heroExists && !heroImage) {
       // 根据摘要生成图片提示词
       const imagePrompt = await generateImagePrompt(title, summary || description);
       if (imagePrompt) {
@@ -530,6 +615,8 @@ async function main() {
             `---\nheroImage: "${heroPath}"\n`
           );
           fs.writeFileSync(filePath, fileContent);
+          hasChanges = true;
+          changes.heroImages.push(heroPath);
         }
       }
     } else if (heroExists && !heroImage) {
@@ -544,8 +631,12 @@ async function main() {
       console.log(`   🖼️  使用已存在的 Hero 图片: ${heroImage}`);
     } else if (hasCustomHero) {
       console.log(`   🖼️  使用自定义 Hero 图片: ${heroImage}`);
-    } else if (heroExists) {
-      console.log(`   🖼️  Hero 图片已存在，跳过生成`);
+    } else if (heroImage) {
+      console.log(`   ✓ Hero 图片已存在，跳过生成`);
+    }
+
+    if (hasChanges) {
+      changes.articles.push(file);
     }
 
     posts.push({
@@ -556,12 +647,15 @@ async function main() {
       summary,
       heroImage,
       content: body,
-      aiGenerated: !!aiSummary,
+      aiGenerated: !data.summary && !!summary,
     });
   }
 
   // 构建搜索索引
   await buildSearchIndex(posts);
+
+  // 推送变更到 content-repo
+  await pushChangesToContentRepo(changes);
 
   console.log('\n✨ AI 预处理完成!');
 }
