@@ -295,6 +295,7 @@ A single ripe tomato resting on a clean white minimalist desk, soft shadows, con
     }
     if (!data.choices || !data.choices[0]?.message?.content) {
       console.log(`❌ 提示词生成失败: API 返回异常`);
+      console.log(`   返回数据: ${JSON.stringify(data).slice(0, 500)}`);
       return null;
     }
     return data.choices[0].message.content.trim();
