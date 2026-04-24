@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import GiscusComments from '../../components/GiscusComments';
+import { GITHUB_CONFIG } from '../../config';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
@@ -26,6 +27,9 @@ const formatDate = (date: Date) => {
     day: '2-digit'
   }).replace(/\//g, '.');
 };
+
+// 生成 GitHub 源文件链接
+const githubSourceUrl = `https://github.com/${GITHUB_CONFIG.contentRepo.owner}/${GITHUB_CONFIG.contentRepo.repo}/blob/${GITHUB_CONFIG.contentRepo.branch}/${GITHUB_CONFIG.contentRepo.path}/${post.id}`;
 ---
 
 <Base title={post.data.title} description={post.data.description}>
@@ -108,6 +112,22 @@ const formatDate = (date: Date) => {
     ">
       <Content />
     </div>
+
+    <!-- GitHub Source Link -->
+    <footer class="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-slate-200 dark:border-zinc-800">
+      <a
+        href={githubSourceUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-zinc-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+          <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65S8.93 17.38 9 18v4"></path>
+          <path d="M9 18c-4.51 2-5-2-7-2"></path>
+        </svg>
+        <span class="font-mono text-xs uppercase tracking-wide">在 GitHub 上查看源文件</span>
+      </a>
+    </footer>
   </article>
 
   <!-- Comments -->

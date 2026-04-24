@@ -1,9 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 import Search from '../components/Search.astro';
-import { SITE_CONFIG } from '../config';
+import { SITE_CONFIG, GITHUB_CONFIG } from '../config';
 
-const GITHUB_USERNAME = SITE_CONFIG.githubUsername;
+const GITHUB_USERNAME = GITHUB_CONFIG.username;
 ---
 
 <Base title="Projects - 技术项目展示" description="展示我的开源项目和技术作品">
